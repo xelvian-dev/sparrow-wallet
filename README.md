@@ -1,125 +1,115 @@
-# Sparrow Bitcoin Wallet
+<div align="center">
 
-Sparrow is a modern desktop Bitcoin wallet application supporting most hardware wallets and built on common standards such as PSBT, with an emphasis on transparency and usability.
+<img src="src/main/resources/image/sparrow.png" alt="Sparrow Wallet" width="128" />
 
-More information (and release binaries) can be found at https://sparrowwallet.com. Release binaries are also available directly from [GitHub](https://github.com/sparrowwallet/sparrow/releases).
+# Sparrow Wallet
 
-![Sparrow Wallet](https://sparrowwallet.com/assets/images/control-your-sends.png)
+### Your keys. Your Bitcoin. Your control.
 
-## Building
+An open-source desktop Bitcoin wallet for transparent transaction management, hardware wallet integration, and connecting to your own node.
 
-To clone this project, use
+![Java](https://img.shields.io/badge/Java-25%2B-ed8b00?style=flat-square&logo=openjdk&logoColor=white)
+![JavaFX](https://img.shields.io/badge/UI-JavaFX-2563eb?style=flat-square)
+![Platforms](https://img.shields.io/badge/Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-334155?style=flat-square)
+[![License](https://img.shields.io/badge/License-Apache%202.0-22c55e?style=flat-square)](LICENSE)
 
-`git clone --recursive git@github.com:sparrowwallet/sparrow.git`
+[Features](#features) · [Quick Start](#quick-start) · [Build](#build) · [Project Structure](#project-structure) · [Documentation](#documentation)
 
-or for those without SSH credentials:
+</div>
 
-`git clone --recursive https://github.com/sparrowwallet/sparrow.git`
+---
 
-In order to build, Sparrow requires Java 25 or higher to be installed. 
-The release binaries are built with [Eclipse Temurin 25.0.5+8](https://github.com/adoptium/temurin25-binaries/releases/tag/jdk-25.0.5%2B8).
-If you are using [SDKMAN](https://sdkman.io/), you can use `sdk env install` to ensure you have the correct version.
+## About
 
-Other packages may also be necessary to build depending on the platform. On Debian/Ubuntu systems:
+Sparrow lets you manage Bitcoin wallets and inspect each transaction, including selected UTXOs, recipients, change, and fees. It supports single-signature and multisignature wallets, cold storage, and hardware wallets.
 
-`sudo apt install -y rpm fakeroot binutils`
+This project is based on [sparrowwallet/sparrow](https://github.com/sparrowwallet/sparrow). It includes a custom README while preserving the original license and author credits.
 
-The Sparrow binaries can be built from source using
+## Features
 
-`./gradlew jpackage`
+| Feature | Capabilities |
+| :--- | :--- |
+| **Transaction control** | Select UTXOs, customize fees, and review transaction details before sending |
+| **Flexible wallets** | Single-signature and multisignature wallets with standard Bitcoin scripts |
+| **Hardware wallets** | Hardware wallet integration through the `lark` module |
+| **Offline signing** | PSBT support with QR code and file exchange |
+| **Network connections** | Bitcoin Core and Electrum server support |
+| **Development networks** | Mainnet, testnet, testnet4, signet, and regtest |
 
-On Linux distributions without `deb` or `rpm` packaging tools installed (such as Arch), building the installers can be skipped with
+## Quick Start
 
-`./gradlew jpackage -PskipInstallers=true`
+Running from source requires **JDK 25 or later**. The Gradle Wrapper is included; the first run requires internet access to download Gradle and dependencies. The `drongo` and `lark` modules are Git submodules. Initialize them after cloning:
 
-Note that to build the Windows installer, you will need to install [WiX](https://github.com/wixtoolset/wix3/releases).
-
-When updating to the latest HEAD
-
-`git pull --recurse-submodules`
-
-The release binaries are reproducible from v1.5.0 onwards (pre codesigning and installer packaging). More detailed [instructions on reproducing the binaries](docs/reproducible.md) are provided.
-
-> Video documentation of your build process uploaded to [bitcoinbinary.org](https://bitcoinbinary.org/) is appreciated. Alternatively check the site if you wish to see if someone else already verified the provided binaries. 
-
-## Running
-
-If you prefer to run Sparrow directly from source, it can be launched from within the project directory with
-
-`./sparrow`
-
-Java 25 or higher must be installed. 
-
-## Configuration
-
-Sparrow has a number of command line options, for example to change its home folder or use testnet:
-
-```
-./sparrow -h
-
-Usage: sparrow [options]
-  Options:
-    --dir, -d
-      Path to Sparrow home folder
-    --help, -h
-      Show usage
-    --level, -l
-      Set log level
-      Possible Values: [ERROR, WARN, INFO, DEBUG, TRACE]      
-    --network, -n
-      Network to use
-      Possible Values: [mainnet, testnet, regtest, signet, testnet4]
+```bash
+git submodule update --init --recursive
 ```
 
-Note that testnet currently refers to testnet3.
+Check your Java installation:
 
-As a fallback, the network (mainnet, testnet, testnet4, regtest or signet) can also be set using an environment variable `SPARROW_NETWORK`. For example:
+```bash
+java -version
+```
 
-`export SPARROW_NETWORK=testnet`
+Run the application from the project root:
 
-A final fallback which can be useful when running the Sparrow binary is to create a file called ``network-testnet`` in the Sparrow home folder (see below) to configure the testnet network.
+```bash
+# Linux / macOS
+./sparrow
+```
 
-Note that if you are connecting to an Electrum server when using testnet, that server will need to be running on testnet configuration as well.
+```powershell
+# Windows PowerShell
+.\sparrow.bat
+```
 
-When not explicitly configured using the command line argument above, Sparrow stores its mainnet config file, log file and wallets in a home folder location appropriate to the operating system:
+For development, specify a separate data directory and network:
 
-| Platform | Location |
-|----------| -------- |
-| macOS    | ~/.sparrow |
-| Linux    | ~/.sparrow |
-| Windows  | %APPDATA%/Sparrow |
+```bash
+./sparrow --network signet --dir ./dev-wallet
+```
 
-Testnet3, testnet4, regtest and signet configurations (along with their wallets) are stored in subfolders to allow easy switching between networks.
+Show all available options: `./sparrow --help`.
 
-On macOS and Linux, Sparrow also supports the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/). 
-This is opt in: for each category below, if the corresponding directory already exists, Sparrow uses it, otherwise it continues to use the home folder above. Categories are resolved independently, so files can be moved across one at a time.
+## Build
 
-| Category | Location | Contents                              |
-|----------| -------- |---------------------------------------|
-| Config   | `$XDG_CONFIG_HOME/sparrow` (default `~/.config/sparrow`) | `config`, `network-*` markers         |
-| Data     | `$XDG_DATA_HOME/sparrow` (default `~/.local/share/sparrow`) | `wallets`, `certs`, `lark`            |
-| State    | `$XDG_STATE_HOME/sparrow` (default `~/.local/state/sparrow`) | `sparrow.log`, `tor/work`, lock files |
-| Cache    | `$XDG_CACHE_HOME/sparrow` (default `~/.cache/sparrow`) | `tor/cache`                           |
+| Task | Linux / macOS |
+| :--- | :--- |
+| Run the application | `./gradlew run` |
+| Run tests | `./gradlew test` |
+| Build the application package | `./gradlew jpackage` |
+| Build without installers | `./gradlew jpackage -PskipInstallers=true` |
 
-Specifying a home folder with the `-d` argument disables XDG resolution entirely, and stores all files in the given folder.
+On Windows, use `.\gradlew.bat` instead of `./gradlew`.
 
-## Reporting Issues
+Packaging on Debian / Ubuntu requires additional tools:
 
-Please use the [Issues](https://github.com/sparrowwallet/sparrow/issues) tab above to report an issue. If possible, look in the sparrow.log file in the configuration directory for information helpful in debugging. 
+```bash
+sudo apt install rpm fakeroot binutils
+```
+
+Building the Windows installer requires WiX. See [docs/reproducible.md](docs/reproducible.md) for reproducible build instructions.
+
+## Project Structure
+
+```text
+.
+├── src/main/          # Application, JavaFX interface, and resources
+├── src/test/          # Application tests
+├── drongo/            # Bitcoin primitives and wallet logic
+├── lark/              # Hardware wallet integration
+├── docs/              # Technical documentation
+├── gradle/            # Gradle Wrapper and dependency configuration
+├── build.gradle       # Dependencies, execution, and packaging
+└── settings.gradle    # Module configuration
+```
+
+## Documentation
+
+- [Sparrow guides](https://sparrowwallet.com/docs/)
+- [Reproducible builds](docs/reproducible.md)
+- [Upstream security policy](SECURITY.md)
+- [Upstream repository](https://github.com/sparrowwallet/sparrow)
 
 ## License
 
-Sparrow is licensed under the Apache 2 software licence.
-
-## GPG Key
-
-The Sparrow release binaries here and on [sparrowwallet.com](https://sparrowwallet.com/download/) are signed using [craigraw's GPG key](https://keybase.io/craigraw):  
-Fingerprint: D4D0D3202FC06849A257B38DE94618334C674B40  
-64-bit: E946 1833 4C67 4B40
-
-## Credit
-
-![Yourkit](https://www.yourkit.com/images/yklogo.png)
-
-Sparrow Wallet uses the [Yourkit Java Profiler](https://www.yourkit.com/java/profiler/) to profile and improve performance. 
-YourKit supports open source projects with useful tools for monitoring and profiling Java and .NET applications.
+The code is distributed under the [Apache License 2.0](LICENSE). Original author credits and license notices are preserved. Included modules retain their licenses in their respective directories.
